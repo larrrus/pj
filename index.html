@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Buscador PJ</title>
+
+  <!-- Librería para leer CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: white;
+      padding: 40px;
+    }
+
+    label {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 300px;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+
+    #resultado {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <label for="dni">
+    Inserte aqui su numero de documento sin puntos
+  </label>
+
+  <input type="text" id="dni">
+  <button onclick="buscar()">Buscar</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    let datos = [];
+
+    Papa.parse("data.csv", {
+      download: true,
+      header: true,
+      complete: function(res) {
+        datos = res.data;
+      }
+    });
+
+    function buscar() {
+      const dniIngresado = document.getElementById("dni").value.trim();
+      const resultadoDiv = document.getElementById("resultado");
+      resultadoDiv.innerHTML = "";
+
+      const fila = datos.find(d => d[Object.keys(d)[0]] === dniIngresado);
+
+      if (!fila) {
+        alert("No se encuentra afiliadx al PJ");
+        return;
+      }
+
+      const columnas = Object.keys(fila);
+
+      resultadoDiv.innerHTML = `
+        <p><strong>${columnas[1]}:</strong> ${fila[columnas[1]]}</p>
+        <p><strong>${columnas[2]}:</strong> ${fila[columnas[2]]}</p>
+        <p><strong>${columnas[3]}:</strong> ${fila[columnas[3]]}</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
