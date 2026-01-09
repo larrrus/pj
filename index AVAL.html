@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Avalá la lista de Axel y Alak</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #1AAFD9;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* ===== BANNERS RESPONSIVE ===== */
+    .banner-mobile,
+    .banner-desktop {
+      width: 100%;
+      display: block;
+    }
+
+    .banner-desktop {
+      display: none;
+    }
+
+    .banner-mobile img,
+    .banner-desktop img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    @media (min-width: 768px) {
+      .banner-mobile {
+        display: none;
+      }
+      .banner-desktop {
+        display: block;
+      }
+    }
+
+    /* ===== CONTENEDOR PRINCIPAL ===== */
+    .contenedor {
+      text-align: center;
+      max-width: 600px;
+      width: 90%;
+      margin: 20px auto 0;
+      padding: 25px 20px 30px;
+      background-color: #ffffff;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      color: #000;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 18px;
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #000;
+      background-color: rgba(26, 175, 217, 0.2);
+      padding: 8px 14px;
+      border-radius: 10px;
+    }
+
+    input {
+      padding: 12px;
+      font-size: 18px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      border: 1px solid #000;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      background-color: #0b5ed7;
+      color: white;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    button:hover {
+      background-color: #084298;
+    }
+
+    #resultado {
+      margin-top: 25px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .tarjeta,
+    .tarjeta-error {
+      background-color: white;
+      padding: 22px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      width: 100%;
+      max-width: 500px;
+      font-size: 18px;
+    }
+
+    .tarjeta-error {
+      color: #b02a37;
+      font-weight: bold;
+    }
+
+    .boton-link {
+      display: block;
+      margin-top: 18px;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #198754;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+
+    .boton-link:hover {
+      background-color: #146c43;
+    }
+
+    /* ===== FOOTER TECNICO ===== */
+    .footer-tech {
+      text-align: center;
+      margin: 35px 0 20px;
+    }
+
+    .footer-tech a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: rgba(0,0,0,0.4);
+      text-decoration: none;
+      opacity: 0.35;
+    }
+
+    .footer-tech a:hover {
+      opacity: 0.7;
+    }
+
+    .footer-tech img {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BANNER MOBILE -->
+  <div class="banner-mobile">
+    <img src="banner-mobile.jpg" alt="Banner AVAL Mobile">
+  </div>
+
+  <!-- BANNER DESKTOP -->
+  <div class="banner-desktop">
+    <img src="banner-desktop.jpg" alt="Banner AVAL Desktop">
+  </div>
+
+  <div class="contenedor">
+    <h1>Avalá la lista de Axel y Alak</h1>
+
+    <label for="busqueda">
+      Ingrese DNI o Apellido
+    </label>
+
+    <input type="text" id="busqueda" placeholder="DNI o Apellido">
+    <button onclick="buscar()">Buscar</button>
+
+    <div id="resultado"></div>
+  </div>
+
+  <!-- FOOTER TECNICO -->
+  <footer class="footer-tech">
+    <a href="https://github.com/larrrus" target="_blank" aria-label="Soporte técnico GitHub">
+      <span>Soporte técnico</span>
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub">
+    </a>
+  </footer>
+
+  <script>
+    let datos = [];
+
+    Papa.parse("data.csv", {
+      download: true,
+      header: true,
+      complete: function(res) {
+        datos = res.data;
+      }
+    });
+
+    document.getElementById("busqueda").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") buscar();
+    });
+
+    function buscar() {
+      const valor = document.getElementById("busqueda").value.trim().toUpperCase();
+      const resultadoDiv = document.getElementById("resultado");
+      resultadoDiv.innerHTML = "";
+
+      if (!valor || datos.length === 0) return;
+
+      const columnas = Object.keys(datos[0]);
+      const colDNI = columnas[0];
+      const colApellido = columnas[1];
+      const colTexto = columnas[2];
+      const colTextoLink = columnas[3];
+
+      const resultados = datos.filter(d =>
+        d[colDNI] === valor ||
+        d[colApellido]?.toUpperCase().includes(valor)
+      );
+
+      if (resultados.length === 0) {
+        resultadoDiv.innerHTML = `
+          <div class="tarjeta-error">
+            <p>No se encuentra afiliado/a</p>
+            <a class="boton-link"
+               href="https://docs.google.com/forms/d/e/1FAIpQLSewhKB8IsQyviWaC-_FFcK5ms0hdbrqitZ12d76XqjqzRfnag/viewform?usp=dialog"
+               target="_blank">
+              Toque aquí para afiliarse
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      resultados.forEach(fila => {
+        const match = fila[colTextoLink]?.match(/https?:\/\/\S+/);
+        const url = match ? match[0] : "#";
+
+        resultadoDiv.innerHTML += `
+          <div class="tarjeta">
+            <p><strong>${fila[colApellido]}</strong></p>
+            <p>DNI: ${fila[colDNI]}</p>
+            <p>${fila[colTexto]}</p>
+            <a class="boton-link" href="${url}" target="_blank">
+              Toque aquí para AVALAR la lista que impulsa Axel Kicillof y Julio Alak
+            </a>
+          </div>
+        `;
+      });
+    }
+  </script>
+
+</body>
+</html>
